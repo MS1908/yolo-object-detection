@@ -194,3 +194,4 @@ logs/
 
 test.jpg
 test.py
+lightning_logs/

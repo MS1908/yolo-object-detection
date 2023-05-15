@@ -1,9 +1,9 @@
 from torch import nn
 
 
-class YOLOv1(nn.Module):
+class YOLOv1Tiny(nn.Module):
     def __init__(self, num_bboxes=2, num_classes=20, init_weight=True):
-        super(YOLOv1, self).__init__()
+        super(YOLOv1Tiny, self).__init__()
 
         self.feature_size = 7
         self.num_bboxes = num_bboxes
@@ -18,64 +18,37 @@ class YOLOv1(nn.Module):
     @staticmethod
     def _make_conv_layers():
         conv = nn.Sequential(
-            nn.Conv2d(3, 64, 7, stride=2, padding=3),
+            nn.Conv2d(3, 16, 1, stride=1, padding=1),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.MaxPool2d(2, stride=2),
+
+            nn.Conv2d(16, 32, 3, stride=1, padding=1),
             nn.LeakyReLU(0.1, inplace=True),
             nn.MaxPool2d(2),
 
-            nn.Conv2d(64, 192, 3, padding=1),
+            nn.Conv2d(32, 64, 3, stride=1, padding=1),
             nn.LeakyReLU(0.1, inplace=True),
             nn.MaxPool2d(2),
 
-            nn.Conv2d(192, 128, 1),
-            nn.LeakyReLU(0.1, inplace=True),
-            nn.Conv2d(128, 256, 3, padding=1),
-            nn.LeakyReLU(0.1, inplace=True),
-            nn.Conv2d(256, 256, 1),
-            nn.LeakyReLU(0.1, inplace=True),
-            nn.Conv2d(256, 512, 3, padding=1),
+            nn.Conv2d(64, 128, 3, stride=1, padding=1),
             nn.LeakyReLU(0.1, inplace=True),
             nn.MaxPool2d(2),
 
-            nn.Conv2d(512, 256, 1),
-            nn.LeakyReLU(0.1, inplace=True),
-            nn.Conv2d(256, 512, 3, padding=1),
-            nn.LeakyReLU(0.1, inplace=True),
-            nn.Conv2d(512, 256, 1),
-            nn.LeakyReLU(0.1, inplace=True),
-            nn.Conv2d(256, 512, 3, padding=1),
-            nn.LeakyReLU(0.1, inplace=True),
-            nn.Conv2d(512, 256, 1),
-            nn.LeakyReLU(0.1, inplace=True),
-            nn.Conv2d(256, 512, 3, padding=1),
-            nn.LeakyReLU(0.1, inplace=True),
-            nn.Conv2d(512, 256, 1),
-            nn.LeakyReLU(0.1, inplace=True),
-            nn.Conv2d(256, 512, 3, padding=1),
-            nn.LeakyReLU(0.1, inplace=True),
-            nn.Conv2d(512, 512, 1),
-            nn.LeakyReLU(0.1, inplace=True),
-            nn.Conv2d(512, 1024, 3, padding=1),
+            nn.Conv2d(128, 256, 3, stride=1, padding=1),
             nn.LeakyReLU(0.1, inplace=True),
             nn.MaxPool2d(2),
 
-            nn.Conv2d(1024, 512, 1),
+            nn.Conv2d(256, 512, 3, stride=1, padding=1),
             nn.LeakyReLU(0.1, inplace=True),
-            nn.Conv2d(512, 1024, 3, padding=1),
-            nn.LeakyReLU(0.1, inplace=True),
-            nn.Conv2d(1024, 512, 1),
-            nn.LeakyReLU(0.1, inplace=True),
-            nn.Conv2d(512, 1024, 3, padding=1),
-            nn.LeakyReLU(0.1, inplace=True),
+            nn.MaxPool2d(2),
 
-            nn.Conv2d(1024, 1024, 3, padding=1),
+            nn.Conv2d(512, 1024, 3, stride=1, padding=1),
             nn.LeakyReLU(0.1, inplace=True),
-            nn.Conv2d(1024, 1024, 3, stride=2, padding=1),
-            nn.LeakyReLU(0.1),
+            nn.MaxPool2d(2),
 
-            nn.Conv2d(1024, 1024, 3, padding=1),
+            nn.Conv2d(1024, 256, 3, stride=1, padding=1),
             nn.LeakyReLU(0.1, inplace=True),
-            nn.Conv2d(1024, 1024, 3, padding=1),
-            nn.LeakyReLU(0.1, inplace=True)
+            nn.MaxPool2d(2),
         )
 
         return conv
@@ -84,7 +57,7 @@ class YOLOv1(nn.Module):
         S, B, C = self.feature_size, self.num_bboxes, self.num_classes
 
         net = nn.Sequential(
-            nn.Linear(7 * 7 * 1024, 4096),
+            nn.Linear(1 * 1 * 256, 4096),
             nn.LeakyReLU(0.1, inplace=True),
             nn.Dropout(0.5, inplace=False),
             nn.Linear(4096, S * S * (5 * B + C)),

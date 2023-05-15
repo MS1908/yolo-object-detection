@@ -1,1 +1,1 @@
-from .yolov1 import YOLOv1
+from .yolov1 import YOLOv1Tiny

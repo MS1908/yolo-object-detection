@@ -21,7 +21,7 @@ class KaggleCar(data.Dataset):
             self.transform = A.Compose([
                 A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
                 ToTensorV2()
-            ], bbox_params=A.BboxParams(format='yolo', min_area=1024))
+            ], bbox_params=A.BboxParams(format='yolo'))
         else:
             self.transform = transform
 
@@ -59,7 +59,7 @@ class KaggleCar(data.Dataset):
         else:
             _, self.samples = train_test_split(samples, test_size=split, random_state=42)
 
-    def _encode_bbox(self, bboxes):
+    def _encode_bbox(self, bboxes, im_name):
         boxes = torch.tensor([bbox[:4] for bbox in bboxes])
         labels = torch.tensor([int(bbox[4]) for bbox in bboxes])
 
@@ -97,7 +97,7 @@ class KaggleCar(data.Dataset):
             result = self.transform(image=image, bboxes=bboxes)
             image = result["image"]
             bboxes = result["bboxes"]
-        bboxes = self._encode_bbox(bboxes)
+        bboxes = self._encode_bbox(bboxes, im_name)
 
         return image, bboxes
 
@@ -107,7 +107,7 @@ def kaggle_car_loader_factory_v1(root, img_h=448, img_w=448, bs=32):
         A.Resize(height=img_h, width=img_w),
         A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ToTensorV2()
-    ], bbox_params=A.BboxParams(format='yolo', min_area=1024))
+    ], bbox_params=A.BboxParams(format='yolo'))
 
     train_ds = KaggleCar(root=root, phase='train', num_classes=1, transform=transform)
     train_loader = data.DataLoader(train_ds, batch_size=bs, shuffle=True, num_workers=2)

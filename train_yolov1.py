@@ -4,7 +4,7 @@ import pytorch_lightning as pl
 from torch import nn, optim
 from torchmetrics import detection
 
-from models import YOLOv1
+from models import YOLOv1Tiny
 from losses import YOLOv1Loss
 from dataset import kaggle_car_loader_factory_v1
 
@@ -14,7 +14,7 @@ criterion = YOLOv1Loss(num_classes=1)
 class YOLOv1Model(pl.LightningModule):
     def __init__(self):
         super().__init__()
-        self.net = YOLOv1(num_classes=1)
+        self.net = YOLOv1Tiny(num_classes=1)
 
     def forward(self, x):
         outputs = self.net(x)
