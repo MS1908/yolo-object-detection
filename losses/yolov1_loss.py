@@ -90,7 +90,7 @@ class Loss(nn.Module):
         # Compute loss for the cells with no object bbox.
         noobj_pred = pred_tensor[noobj_mask].view(-1, N)
         noobj_target = target_tensor[noobj_mask].view(-1, N)
-        noobj_conf_mask = torch.cuda.ByteTensor(noobj_pred.size()).fill_(0)
+        noobj_conf_mask = torch.BoolTensor(noobj_pred.size()).fill_(0)
         for b in range(B):
             noobj_conf_mask[:, 4 + 5 * b] = 1
         noobj_pred_conf = noobj_pred[noobj_conf_mask]
@@ -98,8 +98,8 @@ class Loss(nn.Module):
         loss_noobj = F.mse_loss(noobj_pred_conf, noobj_target_conf, reduction='sum')
 
         # Compute loss for the cells with objects.
-        coord_response_mask = torch.cuda.ByteTensor(bbox_target.size()).fill_(0)
-        coord_not_response_mask = torch.cuda.ByteTensor(bbox_target.size()).fill_(1)
+        coord_response_mask = torch.BoolTensor(bbox_target.size()).fill_(0)
+        coord_not_response_mask = torch.BoolTensor(bbox_target.size()).fill_(1)
         bbox_target_iou = torch.zeros(bbox_target.size()).cuda()
 
         # Choose the predicted bbox having the highest IoU for each target bbox.

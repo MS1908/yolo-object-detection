@@ -2,168 +2,81 @@ from torch import nn
 
 
 class YOLOv1(nn.Module):
-    def __init__(self, num_bboxes=2, num_classes=20, bn=True, init_weight=True):
+    def __init__(self, num_bboxes=2, num_classes=20, init_weight=True):
         super(YOLOv1, self).__init__()
 
         self.feature_size = 7
         self.num_bboxes = num_bboxes
         self.num_classes = num_classes
 
-        self.conv_layers = self._make_conv_layers(bn)
+        self.conv_layers = self._make_conv_layers()
         self.fc_layers = self._make_fc_layers()
 
         if init_weight:
             self._initialize_weights()
 
     @staticmethod
-    def _make_conv_layers(bn):
-        if bn:
-            conv = nn.Sequential(
-                nn.Conv2d(3, 64, 7, stride=2, padding=3),
-                nn.BatchNorm2d(64),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.MaxPool2d(2),
+    def _make_conv_layers():
+        conv = nn.Sequential(
+            nn.Conv2d(3, 64, 7, stride=2, padding=3),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.MaxPool2d(2),
 
-                nn.Conv2d(64, 192, 3, padding=1),
-                nn.BatchNorm2d(192),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.MaxPool2d(2),
+            nn.Conv2d(64, 192, 3, padding=1),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.MaxPool2d(2),
 
-                nn.Conv2d(192, 128, 1),
-                nn.BatchNorm2d(128),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(128, 256, 3, padding=1),
-                nn.BatchNorm2d(256),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(256, 256, 1),
-                nn.BatchNorm2d(256),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(256, 512, 3, padding=1),
-                nn.BatchNorm2d(512),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.MaxPool2d(2),
+            nn.Conv2d(192, 128, 1),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Conv2d(128, 256, 3, padding=1),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Conv2d(256, 256, 1),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Conv2d(256, 512, 3, padding=1),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.MaxPool2d(2),
 
-                nn.Conv2d(512, 256, 1),
-                nn.BatchNorm2d(256),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(256, 512, 3, padding=1),
-                nn.BatchNorm2d(512),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(512, 256, 1),
-                nn.BatchNorm2d(256),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(256, 512, 3, padding=1),
-                nn.BatchNorm2d(512),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(512, 256, 1),
-                nn.BatchNorm2d(256),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(256, 512, 3, padding=1),
-                nn.BatchNorm2d(512),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(512, 256, 1),
-                nn.BatchNorm2d(256),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(256, 512, 3, padding=1),
-                nn.BatchNorm2d(512),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(512, 512, 1),
-                nn.BatchNorm2d(512),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(512, 1024, 3, padding=1),
-                nn.BatchNorm2d(1024),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.MaxPool2d(2),
+            nn.Conv2d(512, 256, 1),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Conv2d(256, 512, 3, padding=1),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Conv2d(512, 256, 1),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Conv2d(256, 512, 3, padding=1),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Conv2d(512, 256, 1),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Conv2d(256, 512, 3, padding=1),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Conv2d(512, 256, 1),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Conv2d(256, 512, 3, padding=1),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Conv2d(512, 512, 1),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Conv2d(512, 1024, 3, padding=1),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.MaxPool2d(2),
 
-                nn.Conv2d(1024, 512, 1),
-                nn.BatchNorm2d(512),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(512, 1024, 3, padding=1),
-                nn.BatchNorm2d(1024),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(1024, 512, 1),
-                nn.BatchNorm2d(512),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(512, 1024, 3, padding=1),
-                nn.BatchNorm2d(1024),
-                nn.LeakyReLU(0.1, inplace=True),
+            nn.Conv2d(1024, 512, 1),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Conv2d(512, 1024, 3, padding=1),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Conv2d(1024, 512, 1),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Conv2d(512, 1024, 3, padding=1),
+            nn.LeakyReLU(0.1, inplace=True),
 
-                nn.Conv2d(1024, 1024, 3, padding=1),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(1024, 1024, 3, stride=2, padding=1),
-                nn.LeakyReLU(0.1),
+            nn.Conv2d(1024, 1024, 3, padding=1),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Conv2d(1024, 1024, 3, stride=2, padding=1),
+            nn.LeakyReLU(0.1),
 
-                nn.Conv2d(1024, 1024, 3, padding=1),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(1024, 1024, 3, padding=1),
-                nn.LeakyReLU(0.1, inplace=True)
-            )
-
-        else:
-            conv = nn.Sequential(
-                nn.Conv2d(3, 64, 7, stride=2, padding=3),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.MaxPool2d(2),
-
-                nn.Conv2d(64, 192, 3, padding=1),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.MaxPool2d(2),
-
-                nn.Conv2d(192, 128, 1),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(128, 256, 3, padding=1),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(256, 256, 1),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(256, 512, 3, padding=1),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.MaxPool2d(2),
-
-                nn.Conv2d(512, 256, 1),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(256, 512, 3, padding=1),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(512, 256, 1),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(256, 512, 3, padding=1),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(512, 256, 1),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(256, 512, 3, padding=1),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(512, 256, 1),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(256, 512, 3, padding=1),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(512, 512, 1),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(512, 1024, 3, padding=1),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.MaxPool2d(2),
-
-                nn.Conv2d(1024, 512, 1),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(512, 1024, 3, padding=1),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(1024, 512, 1),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(512, 1024, 3, padding=1),
-                nn.LeakyReLU(0.1, inplace=True),
-
-                nn.Conv2d(1024, 1024, 3, padding=1),
-                nn.BatchNorm2d(1024),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(1024, 1024, 3, stride=2, padding=1),
-                nn.BatchNorm2d(1024),
-                nn.LeakyReLU(0.1),
-
-                nn.Conv2d(1024, 1024, 3, padding=1),
-                nn.BatchNorm2d(1024),
-                nn.LeakyReLU(0.1, inplace=True),
-                nn.Conv2d(1024, 1024, 3, padding=1),
-                nn.BatchNorm2d(1024),
-                nn.LeakyReLU(0.1, inplace=True)
-            )
+            nn.Conv2d(1024, 1024, 3, padding=1),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Conv2d(1024, 1024, 3, padding=1),
+            nn.LeakyReLU(0.1, inplace=True)
+        )
 
         return conv
 

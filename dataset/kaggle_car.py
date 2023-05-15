@@ -102,11 +102,17 @@ class KaggleCar(data.Dataset):
         return image, bboxes
 
 
-def kaggle_car_loader_factory_v1(root, bs=32):
-    train_ds = KaggleCar(root=root, phase='train', num_classes=1)
+def kaggle_car_loader_factory_v1(root, img_h=448, img_w=448, bs=32):
+    transform = A.Compose([
+        A.Resize(height=img_h, width=img_w),
+        A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ToTensorV2()
+    ], bbox_params=A.BboxParams(format='yolo', min_area=1024))
+
+    train_ds = KaggleCar(root=root, phase='train', num_classes=1, transform=transform)
     train_loader = data.DataLoader(train_ds, batch_size=bs, shuffle=True, num_workers=2)
 
-    val_ds = KaggleCar(root=root, phase='val', num_classes=1)
+    val_ds = KaggleCar(root=root, phase='val', num_classes=1, transform=transform)
     val_loader = data.DataLoader(val_ds, batch_size=bs, shuffle=False, num_workers=2)
 
     return train_loader, val_loader
