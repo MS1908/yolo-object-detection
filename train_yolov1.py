@@ -29,3 +29,12 @@ class YOLOv1Model(pl.LightningModule):
 
         criterion = YOLOv1Loss(num_classes=1)
         loss = criterion(y_pred, y)
+
+        self.log("train_loss", loss)
+
+
+if __name__ == '__main__':
+    model = YOLOv1Model()
+    trainer = pl.Trainer()
+    train_loader, val_loader = kaggle_car_loader_factory_v1(root='', bs=2)
+    trainer.fit(model, train_loader, val_loader)
