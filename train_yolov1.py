@@ -44,6 +44,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     model = YOLOv1Model()
-    trainer = pl.Trainer()
+    trainer = pl.Trainer(max_epochs=100)
     train_loader, val_loader = kaggle_car_loader_factory_v1(root=args.train_data, img_h=448, img_w=448, bs=1)
     trainer.fit(model, train_loader, val_loader)
